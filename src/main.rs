@@ -1,4 +1,4 @@
-use std::{path::PathBuf, fs};
+use std::{path::PathBuf, str::FromStr, fs};
 
 use clap::Parser;
 use html::metadata::Title;
@@ -8,9 +8,13 @@ use pdf::{
     enc::StreamFilter,
 };
 
+/// unpdf is a tool to extract images from pdf files
 #[derive(Parser)]
 struct Args {
+    /// Pdf file to extract images from
     pdf_file: PathBuf,
+    /// Folder to store extracted images
+    #[arg(short, long, value_name = "OUTPUT FOLDER")]
     output_folder: Option<PathBuf>,
 }
 
@@ -19,9 +23,9 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    let out_dir:PathBuf = args.output_folder.unwrap_or(PathBuf::from(args.pdf_file.clone()));
+    let out_dir:PathBuf = args.output_folder.unwrap_or(PathBuf::from_str("output")?);
 
-    std::fs::create_dir(out_dir)?;
+    std::fs::create_dir(out_dir.clone())?;
 
     let mut html_title = Title::builder();
 
@@ -35,7 +39,7 @@ fn main() -> Result<()> {
 
     let mut images: Vec<_> = vec![];
 
-    for page in file.pages().take(10) {
+    for page in file.pages() {
         let page = page.unwrap();
 
         let resources = page.resources()?;
@@ -67,7 +71,9 @@ fn main() -> Result<()> {
         
         let fname = format!("extracted_image_{}.{}", i, ext);
 
-        fs::write(fname.as_str(), data)?;
+        let dir_file = out_dir.join(fname.clone());
+
+        fs::write(dir_file, data)?;
 
     }
 

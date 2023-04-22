@@ -31,15 +31,7 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    let log_file_path = args.log_file.unwrap_or(PathBuf::from_str("log.txt")?);
-
-    let log_file = std::fs::OpenOptions::new()
-        .read(true)
-        .write(true)
-        .open(log_file_path)?;
-
     env_logger::builder()
-        .target(env_logger::Target::Pipe(Box::new(log_file)))
         .filter(None, args.log_level.unwrap_or(LevelFilter::Debug))
         .init();
 
@@ -82,7 +74,11 @@ fn main() -> Result<()> {
             Some(DCTDecode(_)) => "jpeg",
             Some(JBIG2Decode) => "jbig2",
             Some(JPXDecode) => "jp2k",
-            _ => continue,
+            None => { 
+                log::error!("No filter detected : {:?}", filter);
+                continue;
+            },
+            _ => continue
         };
 
         let fname = format!("extracted_image_{}.{}", i, ext);

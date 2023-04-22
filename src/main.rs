@@ -5,6 +5,7 @@ use std::{
 };
 
 use clap::Parser;
+use log::LevelFilter;
 use pdf::{
     enc::StreamFilter,
     file::FileOptions,
@@ -19,12 +20,28 @@ struct Args {
     /// Folder to store extracted images
     #[arg(short, long, value_name = "OUTPUT FOLDER")]
     output_folder: Option<PathBuf>,
+    /// Logging level
+    log_level: Option<LevelFilter>,
+    /// Log file
+    log_file: Option<PathBuf>,
 }
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 fn main() -> Result<()> {
     let args = Args::parse();
+
+    let log_file_path = args.log_file.unwrap_or(PathBuf::from_str("log.txt")?);
+
+    let log_file = std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(log_file_path)?;
+
+    env_logger::builder()
+        .target(env_logger::Target::Pipe(Box::new(log_file)))
+        .filter(None, args.log_level.unwrap_or(LevelFilter::Debug))
+        .init();
 
     let out_dir: PathBuf = args.output_folder.unwrap_or(PathBuf::from_str("output")?);
 
@@ -50,6 +67,8 @@ fn main() -> Result<()> {
         )
     }
 
+    log::debug!("main : total images {}", images.len());
+
     for (i, o) in images.iter().enumerate() {
         let img = match **o {
             XObject::Image(ref im) => im,
@@ -71,6 +90,8 @@ fn main() -> Result<()> {
         let dir_file = out_dir.join(fname.clone());
 
         fs::write(dir_file, data)?;
+
+        log::debug!("main :  wrote output file");
     }
 
     Ok(())

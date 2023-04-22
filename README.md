@@ -1,11 +1,11 @@
 # unpdf
 
-unpdf is a somple tool to extract images from pdf files 
+unpdf is a simple tool to extract images from pdf files 
 
 ## Usage
 
 ```bash
-unpdf pdf_file -o output folder
+unpdf pdf_file -o output_folder
 ```
 
 ### Example

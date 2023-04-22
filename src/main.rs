@@ -4,7 +4,7 @@ use std::{
     str::FromStr,
 };
 
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use log::LevelFilter;
 use pdf::{
     enc::StreamFilter,
@@ -26,7 +26,29 @@ struct Args {
     log_file: Option<PathBuf>,
 }
 
+#[derive(Subcommand)]
+enum Command {
+    Log {
+        log_level: Option<LevelFilter>,
+        log_file: Option<PathBuf>,
+    }
+}
+
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+
+fn init_log(args: &Args)  -> env_logger::Builder {
+
+    let mut builder = env_logger::builder();
+
+    if !cfg!(debug_assertions) {
+        let log_file = std::fs::File::create(args.log_file.clone().unwrap_or("log.txt".into())).unwrap();
+        builder.target(env_logger::Target::Pipe(Box::new(log_file)));
+    }
+
+    builder.filter_level(LevelFilter::Debug);
+
+    builder
+}
 
 fn main() -> Result<()> {
     let args = Args::parse();
@@ -74,11 +96,8 @@ fn main() -> Result<()> {
             Some(DCTDecode(_)) => "jpeg",
             Some(JBIG2Decode) => "jbig2",
             Some(JPXDecode) => "jp2k",
-            None => { 
-                log::error!("No filter detected : {:?}", filter);
-                continue;
-            },
-            _ => continue
+            None => "png",
+            _ => continue,
         };
 
         let fname = format!("extracted_image_{}.{}", i, ext);

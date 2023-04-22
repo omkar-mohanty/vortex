@@ -1,7 +1,6 @@
 use std::{path::PathBuf, str::FromStr, fs};
 
 use clap::Parser;
-use html::metadata::Title;
 use pdf::{
     file::FileOptions,
     object::{Resolve, XObject},
@@ -27,15 +26,8 @@ fn main() -> Result<()> {
 
     std::fs::create_dir(out_dir.clone())?;
 
-    let mut html_title = Title::builder();
-
     let file = FileOptions::cached().open(args.pdf_file)?;
 
-    if let Some(ref info) = file.trailer.info_dict {
-        let title = info.get("Title").and_then(|p| p.to_string_lossy().ok());
-
-        html_title.title(title.unwrap());
-    }
 
     let mut images: Vec<_> = vec![];
 

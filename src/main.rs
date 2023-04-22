@@ -1,10 +1,11 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, fs};
 
 use clap::Parser;
 use html::metadata::Title;
 use pdf::{
     file::FileOptions,
-    object::Resolve,
+    object::{Resolve, XObject},
+    enc::StreamFilter,
 };
 
 #[derive(Parser)]
@@ -18,12 +19,9 @@ type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    let mut res_file_name = "res.html".into();
+    let out_dir:PathBuf = args.output_folder.unwrap_or(PathBuf::from(args.pdf_file.clone()));
 
-    if let Some(out_dir) = args.output_folder {
-        res_file_name = out_dir.join("res.html");
-        std::fs::create_dir(out_dir)?;
-    }
+    std::fs::create_dir(out_dir)?;
 
     let mut html_title = Title::builder();
 
@@ -34,8 +32,6 @@ fn main() -> Result<()> {
 
         html_title.title(title.unwrap());
     }
-
-    let res_string = html_title.build().to_string();
 
     let mut images: Vec<_> = vec![];
 
@@ -53,7 +49,27 @@ fn main() -> Result<()> {
         )
     }
 
-    std::fs::write(res_file_name, res_string)?;
+    for (i, o) in images.iter().enumerate() {
+        let img = match **o {
+            XObject::Image(ref im) =>  im,
+            _ => continue
+        };
+
+        let (data, filter)=  img.raw_image_data(&file)?;
+
+        use StreamFilter::*;
+        let ext = match filter {
+            Some(DCTDecode(_)) => "jpeg",
+            Some(JBIG2Decode) => "jbig2",
+            Some(JPXDecode) => "jp2k",
+            _ => continue
+        };
+        
+        let fname = format!("extracted_image_{}.{}", i, ext);
+
+        fs::write(fname.as_str(), data)?;
+
+    }
 
     Ok(())
 }

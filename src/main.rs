@@ -1,9 +1,3 @@
-use std::{
-    fs,
-    path::{Path, PathBuf},
-    str::FromStr,
-};
-use unpdf::{Result, TargetFormat};
 use clap::{Parser, Subcommand};
 use log::LevelFilter;
 use pdf::{
@@ -11,6 +5,12 @@ use pdf::{
     file::FileOptions,
     object::{Resolve, XObject},
 };
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
+use unpdf::{Result, TargetFormat};
 
 /// unpdf is a tool to extract images from pdf files
 #[derive(Parser)]

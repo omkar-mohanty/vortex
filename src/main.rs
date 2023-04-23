@@ -1,7 +1,7 @@
 use std::{
     fs,
     path::{Path, PathBuf},
-    str::FromStr,
+    str::FromStr, io::Cursor,
 };
 
 use clap::{Parser, Subcommand};
@@ -91,7 +91,14 @@ fn main() -> Result<()> {
 
         let (data, filter) = img.raw_image_data(&file)?;
 
+        let img = image::io::Reader::new(Cursor::new(&data)).decode()?;
+
+        let mut buf = Vec::new();
+
+        img.write_to(&mut Cursor::new(&mut buf), image::ImageOutputFormat::Png)?;
+
         use StreamFilter::*;
+
         let ext = match filter {
             Some(DCTDecode(_)) => "jpeg",
             Some(JBIG2Decode) => "jbig2",
@@ -100,11 +107,11 @@ fn main() -> Result<()> {
             _ => continue,
         };
 
-        let fname = format!("extracted_image_{}.{}", i, ext);
+        let fname = format!("extracted_image_{}.{}", i, "png");
 
         let dir_file = out_dir.join(fname.clone());
 
-        fs::write(dir_file, data)?;
+        fs::write(dir_file, buf)?;
 
         log::debug!("main :  wrote output file");
     }

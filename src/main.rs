@@ -1,12 +1,10 @@
 use std::{
     fs,
-    io::{Cursor, Read},
     path::{Path, PathBuf},
     str::FromStr,
 };
-
+use unpdf::{Result, TargetFormat};
 use clap::{Parser, Subcommand};
-use flate2::read::DeflateDecoder;
 use log::LevelFilter;
 use pdf::{
     enc::StreamFilter,
@@ -26,6 +24,8 @@ struct Args {
     log_level: Option<LevelFilter>,
     /// Log file
     log_file: Option<PathBuf>,
+    /// Optional target format,
+    target_format: Option<TargetFormat>,
 }
 
 #[derive(Subcommand)]
@@ -35,8 +35,6 @@ enum Command {
         log_file: Option<PathBuf>,
     },
 }
-
-type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 fn init_log(args: &Args) -> env_logger::Builder {
     let mut builder = env_logger::builder();
@@ -55,9 +53,7 @@ fn init_log(args: &Args) -> env_logger::Builder {
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    env_logger::builder()
-        .filter(None, args.log_level.unwrap_or(LevelFilter::Debug))
-        .init();
+    init_log(&args).init();
 
     let out_dir: PathBuf = args.output_folder.unwrap_or(PathBuf::from_str("output")?);
 
@@ -100,20 +96,7 @@ fn main() -> Result<()> {
             Some(JBIG2Decode) => "jbig2",
             Some(JPXDecode) => "jp2k",
             _ => {
-                let mut d = DeflateDecoder::new(Cursor::new(&data));
-                let mut buf = Vec::new();
-                d.read_to_end(&mut buf)?;
-
-                let decoder = png::Decoder::new(Cursor::new(buf));
-
-                let mut reader = decoder.read_info().unwrap();
-                // Allocate the output buffer.
-                let mut buf = vec![0; reader.output_buffer_size()];
-                // Read the next frame. An APNG might contain multiple frames.
-                let info = reader.next_frame(&mut buf).unwrap();
-                // Grab the bytes of the image.
-                let bytes = &buf[..info.buffer_size()];
-
+                log::debug!("main : unsupported image format");
                 continue;
             }
         };

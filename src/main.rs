@@ -1,10 +1,12 @@
 use std::{
     fs,
+    io::{Cursor, Read},
     path::{Path, PathBuf},
-    str::FromStr, io::Cursor,
+    str::FromStr,
 };
 
 use clap::{Parser, Subcommand};
+use flate2::read::DeflateDecoder;
 use log::LevelFilter;
 use pdf::{
     enc::StreamFilter,
@@ -31,17 +33,17 @@ enum Command {
     Log {
         log_level: Option<LevelFilter>,
         log_file: Option<PathBuf>,
-    }
+    },
 }
 
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
-fn init_log(args: &Args)  -> env_logger::Builder {
-
+fn init_log(args: &Args) -> env_logger::Builder {
     let mut builder = env_logger::builder();
 
     if !cfg!(debug_assertions) {
-        let log_file = std::fs::File::create(args.log_file.clone().unwrap_or("log.txt".into())).unwrap();
+        let log_file =
+            std::fs::File::create(args.log_file.clone().unwrap_or("log.txt".into())).unwrap();
         builder.target(env_logger::Target::Pipe(Box::new(log_file)));
     }
 
@@ -97,13 +99,28 @@ fn main() -> Result<()> {
             Some(DCTDecode(_)) => "jpeg",
             Some(JBIG2Decode) => "jbig2",
             Some(JPXDecode) => "jp2k",
-            Some(FlateDecode(_)) => "png",
-            _ => continue,
+            _ => {
+                let mut d = DeflateDecoder::new(Cursor::new(&data));
+                let mut buf = Vec::new();
+                d.read_to_end(&mut buf)?;
+
+                let decoder = png::Decoder::new(Cursor::new(buf));
+
+                let mut reader = decoder.read_info().unwrap();
+                // Allocate the output buffer.
+                let mut buf = vec![0; reader.output_buffer_size()];
+                // Read the next frame. An APNG might contain multiple frames.
+                let info = reader.next_frame(&mut buf).unwrap();
+                // Grab the bytes of the image.
+                let bytes = &buf[..info.buffer_size()];
+
+                continue;
+            }
         };
 
         log::debug!("Detected format : {ext}");
 
-        let fname = format!("extracted_image_{}.{}", i, "png");
+        let fname = format!("extracted_image_{}.{}", i, ext);
 
         let dir_file = out_dir.join(fname.clone());
 

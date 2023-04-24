@@ -2,22 +2,20 @@ mod img;
 
 use std::{error::Error, fmt::Display};
 
-pub use img::{TargetFormat, Img};
+pub use img::{Img, TargetFormat};
 
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 
 #[macro_export]
 macro_rules! err {
     ($msg:expr) => {
-       Err(Box::new(ImgError {
-            msg: $msg
-        })) 
+        Err(Box::new(ImgError { msg: $msg }))
     };
 }
 
 #[derive(Debug)]
 pub struct ImgError<'a> {
-    msg: &'a str
+    msg: &'a str,
 }
 
 impl<'a> Display for ImgError<'a> {
@@ -26,6 +24,4 @@ impl<'a> Display for ImgError<'a> {
     }
 }
 
-impl<'a> Error for ImgError<'a> {
-
-}
+impl<'a> Error for ImgError<'a> {}

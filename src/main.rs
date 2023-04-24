@@ -7,10 +7,11 @@ use pdf::{
 };
 use std::{
     fs::File,
+    io::{BufWriter, Cursor},
     path::{Path, PathBuf},
-    str::FromStr, io::{Cursor, BufWriter},
+    str::FromStr,
 };
-use unpdf::{Result, TargetFormat, Img};
+use unpdf::{Img, Result, TargetFormat};
 
 /// unpdf is a tool to extract images from pdf files
 #[derive(Parser)]
@@ -105,19 +106,15 @@ fn main() -> Result<()> {
         let source = Cursor::new(data);
 
         let target_format = match args.target_format {
-            Some(ref format) => {
-                TargetFormat::from_str(&format).unwrap_or_default()
-            },
-            None => {
-                TargetFormat::default()
-            }
+            Some(ref format) => TargetFormat::from_str(format).unwrap_or_default(),
+            None => TargetFormat::default(),
         };
-        
+
         let img = Img::new(source, target_format)?;
 
         let target_format_str = match args.target_format {
-            Some(ref format) => format.to_owned(), 
-            None => String::from_str("jpeg")?
+            Some(ref format) => format.to_owned(),
+            None => String::from_str("jpeg")?,
         };
 
         log::debug!("Detected format : {ext}");

@@ -1,8 +1,9 @@
-use crate::{Result, ImgError, err};
+use crate::{err, ImgError, Result};
 use image::{DynamicImage, ImageOutputFormat};
 use std::{
     io::{BufRead, Seek, Write},
-    str::FromStr, ops::Deref,
+    ops::Deref,
+    str::FromStr,
 };
 
 #[derive(Clone)]
@@ -12,8 +13,8 @@ pub struct TargetFormat {
 
 impl Default for TargetFormat {
     fn default() -> Self {
-        Self { format: 
-            String::from_str("jpeg").unwrap()
+        Self {
+            format: String::from_str("jpeg").unwrap(),
         }
     }
 }
@@ -23,23 +24,40 @@ const DEFAULT_JPEG_QUALITY: u8 = 10;
 impl FromStr for TargetFormat {
     type Err = Box<dyn std::error::Error>;
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-
         let format = match s {
             "jpeg" => s,
             "png" => s,
             _ => return err!("Invalid format"),
         };
 
-        Ok(Self { format: format.to_string() })
+        Ok(Self {
+            format: format.to_string(),
+        })
     }
 }
 
-impl Into<ImageOutputFormat> for TargetFormat {
-    fn into(self) -> ImageOutputFormat {
-        match self.format.deref() {
-            "jpeg" => ImageOutputFormat::Jpeg(DEFAULT_JPEG_QUALITY),
-            "png" => ImageOutputFormat::Png, 
-            _ => ImageOutputFormat::Jpeg(DEFAULT_JPEG_QUALITY)
+impl From<ImageOutputFormat> for TargetFormat {
+    fn from(value: ImageOutputFormat) -> Self {
+        use ImageOutputFormat::*;
+        let format = match value {
+            Png => "png",
+            Jpeg(_) => "jpeg",
+            _ => "jpeg",
+        };
+
+        Self {
+            format: format.to_string(),
+        }
+    }
+}
+
+impl From<TargetFormat> for ImageOutputFormat {
+    fn from(value: TargetFormat) -> Self {
+        use ImageOutputFormat::*;
+        match value.format.deref() {
+            "jpeg" => Jpeg(DEFAULT_JPEG_QUALITY),
+            "png" => Png,
+            _ => Jpeg(DEFAULT_JPEG_QUALITY)
         }
     }
 }
@@ -61,8 +79,8 @@ impl Img {
         })
     }
 
-    pub fn write_to<W: Write + Seek>(self, writer:&mut W) -> Result<()> {
-        let format:ImageOutputFormat = self.target_format.into();
+    pub fn write_to<W: Write + Seek>(self, writer: &mut W) -> Result<()> {
+        let format: ImageOutputFormat = self.target_format.into();
         self.dynamic.write_to(writer, format)?;
         Ok(())
     }
@@ -79,8 +97,8 @@ impl Deref for Img {
 mod tests {
     use std::io::BufReader;
 
-    use crate::Result;
     use super::*;
+    use crate::Result;
 
     #[test]
     fn test_file() -> Result<()> {
@@ -88,7 +106,7 @@ mod tests {
 
         let reader = BufReader::new(file);
 
-        let _ =  Img::new(reader, TargetFormat::from_str("png")?)?;
+        let _ = Img::new(reader, TargetFormat::from_str("png")?)?;
 
         Ok(())
     }

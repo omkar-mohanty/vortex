@@ -32,10 +32,12 @@ struct Args {
 
 #[derive(Subcommand)]
 enum Command {
-    Log {
-        log_level: Option<LevelFilter>,
-        log_file: Option<PathBuf>,
+    Extract {
+
     },
+    Convert {
+
+    }
 }
 
 fn init_log(args: &Args) -> env_logger::Builder {

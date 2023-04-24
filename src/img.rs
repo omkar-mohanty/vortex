@@ -57,7 +57,7 @@ impl From<TargetFormat> for ImageOutputFormat {
         match value.format.deref() {
             "jpeg" => Jpeg(DEFAULT_JPEG_QUALITY),
             "png" => Png,
-            _ => Jpeg(DEFAULT_JPEG_QUALITY)
+            _ => Jpeg(DEFAULT_JPEG_QUALITY),
         }
     }
 }

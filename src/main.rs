@@ -6,9 +6,9 @@ use pdf::{
     object::{Resolve, XObject},
 };
 use std::{
-    fs,
+    fs::File,
     path::{Path, PathBuf},
-    str::FromStr, io::Cursor,
+    str::FromStr, io::{Cursor, BufWriter},
 };
 use unpdf::{Result, TargetFormat, Img};
 
@@ -24,8 +24,9 @@ struct Args {
     log_level: Option<LevelFilter>,
     /// Log file
     log_file: Option<PathBuf>,
-    /// Optional target format,
-    target_format: Option<TargetFormat>,
+    /// Optional  output image format i.e jpeg, png etc,
+    #[arg(short, long)]
+    target_format: Option<String>,
 }
 
 #[derive(Subcommand)]
@@ -103,19 +104,33 @@ fn main() -> Result<()> {
 
         let source = Cursor::new(data);
 
-        let target_format = args.target_format.unwrap_or(TargetFormat::from_str("jpeg"));
+        let target_format = match args.target_format {
+            Some(ref format) => {
+                TargetFormat::from_str(&format).unwrap_or_default()
+            },
+            None => {
+                TargetFormat::default()
+            }
+        };
         
-        let img = Img::new(source, target_format);
+        let img = Img::new(source, target_format)?;
+
+        let target_format_str = match args.target_format {
+            Some(ref format) => format.to_owned(), 
+            None => String::from_str("jpeg")?
+        };
 
         log::debug!("Detected format : {ext}");
 
-        let fname = format!("extracted_image_{}.{}", i, ext);
+        let fname = format!("extracted_image_{}.{}", i, target_format_str);
 
-        let dir_file = out_dir.join(fname.clone());
+        let out_file_path = PathBuf::from(fname);
 
-        fs::write(dir_file, data)?;
+        let out_file = File::create(out_dir.join(out_file_path))?;
 
-        log::debug!("main :  wrote output file");
+        let mut writer = BufWriter::new(out_file);
+
+        img.write_to(&mut writer)?;
     }
 
     Ok(())

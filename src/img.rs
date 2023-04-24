@@ -1,13 +1,21 @@
 use crate::{Result, ImgError, err};
 use image::{DynamicImage, ImageOutputFormat};
 use std::{
-    io::{BufRead, Seek, Write, SeekFrom},
-    str::FromStr, net::TcpStream, fs::File, ops::Deref,
+    io::{BufRead, Seek, Write},
+    str::FromStr, ops::Deref,
 };
 
 #[derive(Clone)]
 pub struct TargetFormat {
-    format: ImageOutputFormat,
+    format: String,
+}
+
+impl Default for TargetFormat {
+    fn default() -> Self {
+        Self { format: 
+            String::from_str("jpeg").unwrap()
+        }
+    }
 }
 
 const DEFAULT_JPEG_QUALITY: u8 = 10;
@@ -15,15 +23,24 @@ const DEFAULT_JPEG_QUALITY: u8 = 10;
 impl FromStr for TargetFormat {
     type Err = Box<dyn std::error::Error>;
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        use ImageOutputFormat::*;
 
         let format = match s {
-            "jpeg" => Jpeg(DEFAULT_JPEG_QUALITY),
-            "png" => Png,
+            "jpeg" => s,
+            "png" => s,
             _ => return err!("Invalid format"),
         };
 
-        Ok(Self { format })
+        Ok(Self { format: format.to_string() })
+    }
+}
+
+impl Into<ImageOutputFormat> for TargetFormat {
+    fn into(self) -> ImageOutputFormat {
+        match self.format.deref() {
+            "jpeg" => ImageOutputFormat::Jpeg(DEFAULT_JPEG_QUALITY),
+            "png" => ImageOutputFormat::Png, 
+            _ => ImageOutputFormat::Jpeg(DEFAULT_JPEG_QUALITY)
+        }
     }
 }
 
@@ -45,7 +62,8 @@ impl Img {
     }
 
     pub fn write_to<W: Write + Seek>(self, writer:&mut W) -> Result<()> {
-        self.dynamic.write_to(writer, self.target_format.format)?;
+        let format:ImageOutputFormat = self.target_format.into();
+        self.dynamic.write_to(writer, format)?;
         Ok(())
     }
 }
@@ -55,61 +73,6 @@ impl Deref for Img {
     fn deref(&self) -> &Self::Target {
         self.dynamic.as_bytes()
     }
-}
-
-pub trait ImgWriter: Write + Seek {
-    
-}
-
-pub struct FileWriter {
-    file: File,
-    image: Img
-}
-
-impl Write for FileWriter {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.file.write(buf)
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        self.file.flush()
-    }
-}
-
-impl Seek for FileWriter {
-    fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64> {
-        todo!("Implement seek for file writer")
-    }
-}
-
-impl ImgWriter for FileWriter {
-}
-
-pub struct TcpWriter {
-    stream : TcpStream,
-    image: Img
-}
-
-impl Write for TcpWriter {
-    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        self.stream.write(buf)
-    }
-
-    fn flush(&mut self) -> std::io::Result<()> {
-        self.stream.flush()
-    }
-    
-}
-
-impl Seek for TcpWriter {
-    fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64> {
-        todo!("Implement seek from for bytes in raw image")
-    }
-    
-}
-
-impl ImgWriter for TcpWriter {
-    
 }
 
 #[cfg(test)]

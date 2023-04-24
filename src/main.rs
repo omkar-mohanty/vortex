@@ -28,19 +28,25 @@ struct Args {
     /// Optional  output image format i.e jpeg, png etc,
     #[arg(short, long)]
     target_format: Option<String>,
+    /// Subcommand to convert image from one format to another
     #[command(subcommand)]
     cmd: Command,
 }
 
 #[derive(Subcommand)]
 enum Command {
+    /// Extract images from pdf files
     Extract {},
+    /// Convert images from one format to another
     Convert {
         #[arg(short, long)]
-        image_file: PathBuf,
+        image_file: Vec<PathBuf>,
 
         #[arg(short, long)]
-        output_file_name: PathBuf,
+        output_file_name: Option<String>,
+
+        #[arg(short, long)]
+        target_format: Option<String>,
     },
 }
 

@@ -8,9 +8,9 @@ use pdf::{
 use std::{
     fs,
     path::{Path, PathBuf},
-    str::FromStr,
+    str::FromStr, io::Cursor,
 };
-use unpdf::{Result, TargetFormat};
+use unpdf::{Result, TargetFormat, Img};
 
 /// unpdf is a tool to extract images from pdf files
 #[derive(Parser)]
@@ -100,6 +100,10 @@ fn main() -> Result<()> {
                 continue;
             }
         };
+
+        let source = Cursor::new(data);
+        
+        let img = Img::new(source, target_format);
 
         log::debug!("Detected format : {ext}");
 

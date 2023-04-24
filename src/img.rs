@@ -1,8 +1,8 @@
 use crate::Result;
 use image::{DynamicImage, ImageOutputFormat};
 use std::{
-    io::{BufRead, Seek, Write},
-    str::FromStr, net::TcpStream, fs::File,
+    io::{BufRead, Seek, Write, SeekFrom},
+    str::FromStr, net::TcpStream, fs::File, ops::Deref,
 };
 
 #[derive(Clone)]
@@ -27,20 +27,20 @@ impl FromStr for TargetFormat {
     }
 }
 
-pub struct Image {
+pub struct Img {
     dynamic: DynamicImage,
     target_format: TargetFormat,
 }
 
-impl Image {
-    pub fn new<R: BufRead + Seek>(source: R, target_format: ImageOutputFormat) -> Result<Self> {
+impl Img {
+    pub fn new<R: BufRead + Seek>(source: R, target_format: TargetFormat) -> Result<Self> {
         let dynamic = image::io::Reader::new(source)
             .with_guessed_format()?
             .decode()?;
 
         Ok(Self {
             dynamic,
-            target_format: TargetFormat { format: target_format },
+            target_format,
         })
     }
 
@@ -50,13 +50,20 @@ impl Image {
     }
 }
 
+impl Deref for Img {
+    type Target = [u8];
+    fn deref(&self) -> &Self::Target {
+        self.dynamic.as_bytes()
+    }
+}
+
 pub trait ImgWriter: Write + Seek {
     
 }
 
 pub struct FileWriter {
     file: File,
-    image: Image
+    image: Img
 }
 
 impl Write for FileWriter {
@@ -71,7 +78,7 @@ impl Write for FileWriter {
 
 impl Seek for FileWriter {
     fn seek(&mut self, pos: std::io::SeekFrom) -> std::io::Result<u64> {
-        self.file.seek(pos)
+        todo!("Implement seek for file writer")
     }
 }
 
@@ -80,7 +87,7 @@ impl ImgWriter for FileWriter {
 
 pub struct TcpWriter {
     stream : TcpStream,
-    image: Image
+    image: Img
 }
 
 impl Write for TcpWriter {
@@ -118,7 +125,7 @@ mod tests {
 
         let reader = BufReader::new(file);
 
-        let _ =  Image::new(reader, ImageOutputFormat::Png)?;
+        let _ =  Img::new(reader, TargetFormat::from_str("png")?)?;
 
         Ok(())
     }

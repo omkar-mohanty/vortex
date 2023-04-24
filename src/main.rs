@@ -102,6 +102,8 @@ fn main() -> Result<()> {
         };
 
         let source = Cursor::new(data);
+
+        let target_format = args.target_format.unwrap_or(TargetFormat::from_str("jpeg"));
         
         let img = Img::new(source, target_format);
 

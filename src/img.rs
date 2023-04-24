@@ -1,4 +1,4 @@
-use crate::Result;
+use crate::{Result, ImgError, err};
 use image::{DynamicImage, ImageOutputFormat};
 use std::{
     io::{BufRead, Seek, Write, SeekFrom},
@@ -13,14 +13,14 @@ pub struct TargetFormat {
 const DEFAULT_JPEG_QUALITY: u8 = 10;
 
 impl FromStr for TargetFormat {
-    type Err = &'static str;
+    type Err = Box<dyn std::error::Error>;
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
         use ImageOutputFormat::*;
 
         let format = match s {
             "jpeg" => Jpeg(DEFAULT_JPEG_QUALITY),
             "png" => Png,
-            _ => return Err("Invalid format"),
+            _ => return err!("Invalid format"),
         };
 
         Ok(Self { format })

@@ -28,16 +28,20 @@ struct Args {
     /// Optional  output image format i.e jpeg, png etc,
     #[arg(short, long)]
     target_format: Option<String>,
+    #[command(subcommand)]
+    cmd: Command,
 }
 
 #[derive(Subcommand)]
 enum Command {
-    Extract {
-
-    },
+    Extract {},
     Convert {
+        #[arg(short, long)]
+        image_file: PathBuf,
 
-    }
+        #[arg(short, long)]
+        output_file_name: PathBuf,
+    },
 }
 
 fn init_log(args: &Args) -> env_logger::Builder {

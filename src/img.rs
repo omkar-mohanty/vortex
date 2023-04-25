@@ -56,12 +56,12 @@ impl From<ImageFormat> for ImageOutputFormat {
     }
 }
 
-pub struct Img {
+pub struct RawImage {
     dynamic: DynamicImage,
     target_format: ImageFormat,
 }
 
-impl Img {
+impl RawImage {
     pub fn new<R: BufRead + Seek>(source: R, target_format: ImageFormat) -> Result<Self> {
         let dynamic = image::io::Reader::new(source)
             .with_guessed_format()?
@@ -80,7 +80,7 @@ impl Img {
     }
 }
 
-impl Deref for Img {
+impl Deref for RawImage {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {
         self.dynamic.as_bytes()
@@ -100,7 +100,7 @@ mod tests {
 
         let reader = BufReader::new(file);
 
-        let _ = Img::new(reader, ImageFormat::from_str("png")?)?;
+        let _ = RawImage::new(reader, ImageFormat::from_str("png")?)?;
 
         Ok(())
     }

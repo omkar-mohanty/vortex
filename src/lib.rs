@@ -2,7 +2,7 @@ mod img;
 
 use std::{error::Error, fmt::Display};
 
-pub use img::{Img, ImageFormat};
+pub use img::{ImageFormat, RawImage};
 
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 

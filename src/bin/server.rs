@@ -2,12 +2,12 @@ use std::io::Cursor;
 
 use actix_web::{post, web::Bytes, App, HttpResponse, HttpServer, Responder};
 
-use unpdf::{Img, TargetFormat};
+use unpdf::{Img, ImageFormat};
 
 #[post("/extract")]
 async fn extract(req: Bytes) -> impl Responder {
     let reader = Cursor::new(&req[..]);
-    let target_format = TargetFormat::default();
+    let target_format = ImageFormat::default();
     let image = Img::new(reader, target_format).unwrap();
     let mut buf = Vec::new();
     image.write_to(&mut Cursor::new(&mut buf)).unwrap();

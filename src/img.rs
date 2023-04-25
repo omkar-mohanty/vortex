@@ -7,56 +7,50 @@ use std::{
 };
 
 #[derive(Clone)]
-pub struct TargetFormat {
-    format: String,
+pub enum ImageFormat {
+    Jpeg(u8),
+    Png,
+    Jp2k,
 }
 
-impl Default for TargetFormat {
+impl Default for ImageFormat {
     fn default() -> Self {
-        Self {
-            format: String::from_str("jpeg").unwrap(),
-        }
+        ImageFormat::Jpeg(DEFAULT_JPEG_QUALITY)
     }
 }
 
 const DEFAULT_JPEG_QUALITY: u8 = 10;
 
-impl FromStr for TargetFormat {
+impl FromStr for ImageFormat {
     type Err = Box<dyn std::error::Error>;
     fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
-        let format = match s {
-            "jpeg" => s,
-            "png" => s,
+        use ImageFormat::*;
+        Ok(match s {
+            "jpeg" => Jpeg(DEFAULT_JPEG_QUALITY),
+            "png" => Png,
+            "jp2k" => Jp2k,
             _ => return err!("Invalid format"),
-        };
-
-        Ok(Self {
-            format: format.to_string(),
         })
     }
 }
 
-impl From<ImageOutputFormat> for TargetFormat {
+impl From<ImageOutputFormat> for ImageFormat {
     fn from(value: ImageOutputFormat) -> Self {
         use ImageOutputFormat::*;
-        let format = match value {
-            Png => "png",
-            Jpeg(_) => "jpeg",
-            _ => "jpeg",
-        };
-
-        Self {
-            format: format.to_string(),
+        match value {
+            Png => ImageFormat::Png,
+            Jpeg(q) => ImageFormat::Jpeg(q),
+            _ => ImageFormat::Jpeg(DEFAULT_JPEG_QUALITY),
         }
     }
 }
 
-impl From<TargetFormat> for ImageOutputFormat {
-    fn from(value: TargetFormat) -> Self {
+impl From<ImageFormat> for ImageOutputFormat {
+    fn from(value: ImageFormat) -> Self {
         use ImageOutputFormat::*;
-        match value.format.deref() {
-            "jpeg" => Jpeg(DEFAULT_JPEG_QUALITY),
-            "png" => Png,
+        match value {
+            ImageFormat::Jpeg(q) => Jpeg(q),
+            ImageFormat::Png => Png,
             _ => Jpeg(DEFAULT_JPEG_QUALITY),
         }
     }
@@ -64,11 +58,11 @@ impl From<TargetFormat> for ImageOutputFormat {
 
 pub struct Img {
     dynamic: DynamicImage,
-    target_format: TargetFormat,
+    target_format: ImageFormat,
 }
 
 impl Img {
-    pub fn new<R: BufRead + Seek>(source: R, target_format: TargetFormat) -> Result<Self> {
+    pub fn new<R: BufRead + Seek>(source: R, target_format: ImageFormat) -> Result<Self> {
         let dynamic = image::io::Reader::new(source)
             .with_guessed_format()?
             .decode()?;
@@ -106,7 +100,7 @@ mod tests {
 
         let reader = BufReader::new(file);
 
-        let _ = Img::new(reader, TargetFormat::from_str("png")?)?;
+        let _ = Img::new(reader, ImageFormat::from_str("png")?)?;
 
         Ok(())
     }

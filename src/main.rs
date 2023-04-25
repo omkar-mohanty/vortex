@@ -11,7 +11,7 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-use unpdf::{Img, Result, TargetFormat};
+use unpdf::{Img, Result, ImageFormat};
 
 /// unpdf is a tool to extract images from pdf files
 #[derive(Parser)]
@@ -109,17 +109,14 @@ fn main() -> Result<()> {
             Some(DCTDecode(_)) => "jpeg",
             Some(JBIG2Decode) => "jbig2",
             Some(JPXDecode) => "jp2k",
-            _ => {
-                log::debug!("Unsupported format");
-                continue;
-            }
+            _ => "png",
         };
 
         let source = Cursor::new(data);
 
         let target_format = match args.target_format {
-            Some(ref format) => TargetFormat::from_str(format).unwrap_or_default(),
-            None => TargetFormat::default(),
+            Some(ref format) => ImageFormat::from_str(format).unwrap_or_default(),
+            None => ImageFormat::default(),
         };
 
         let img = Img::new(source, target_format)?;

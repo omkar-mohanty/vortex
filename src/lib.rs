@@ -1,5 +1,5 @@
 mod img;
-mod writer;
+pub mod writer;
 
 use std::{error::Error, fmt::Display};
 

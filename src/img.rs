@@ -1,7 +1,6 @@
-use crate::{err, ImgError, Result};
-use image::{DynamicImage, ImageOutputFormat};
+use crate::{err, ImgError};
+use image::ImageOutputFormat;
 use std::{
-    io::{BufRead, Seek, Write},
     ops::Deref,
     str::FromStr,
 };
@@ -57,51 +56,20 @@ impl From<ImageFormat> for ImageOutputFormat {
 }
 
 pub struct RawImage {
-    dynamic: DynamicImage,
-    target_format: ImageFormat,
+    data: Vec<u8>,
 }
 
 impl RawImage {
-    pub fn new<R: BufRead + Seek>(source: R, target_format: ImageFormat) -> Result<Self> {
-        let dynamic = image::io::Reader::new(source)
-            .with_guessed_format()?
-            .decode()?;
-
-        Ok(Self {
-            dynamic,
-            target_format,
-        })
-    }
-
-    pub fn write_to<W: Write + Seek>(self, writer: &mut W) -> Result<()> {
-        let format: ImageOutputFormat = self.target_format.into();
-        self.dynamic.write_to(writer, format)?;
-        Ok(())
+    pub fn new(source: &[u8]) -> Self {
+        Self {
+            data: source.to_vec(),
+        }
     }
 }
 
 impl Deref for RawImage {
     type Target = [u8];
     fn deref(&self) -> &Self::Target {
-        self.dynamic.as_bytes()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::io::BufReader;
-
-    use super::*;
-    use crate::Result;
-
-    #[test]
-    fn test_file() -> Result<()> {
-        let file = std::fs::File::open("./resources/sample_png.png")?;
-
-        let reader = BufReader::new(file);
-
-        let _ = RawImage::new(reader, ImageFormat::from_str("png")?)?;
-
-        Ok(())
+        self.data.deref()
     }
 }

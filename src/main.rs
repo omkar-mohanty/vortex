@@ -7,11 +7,11 @@ use pdf::{
 };
 use std::{
     fs::File,
-    io::{BufWriter, Cursor},
+    io::BufWriter,
     path::{Path, PathBuf},
     str::FromStr,
 };
-use unpdf::{ImageFormat, RawImage, Result};
+use unpdf::{ImageFormat, RawImage, Result, writer::create_writer};
 
 /// unpdf is a tool to extract images from pdf files
 #[derive(Parser)]
@@ -112,14 +112,7 @@ fn main() -> Result<()> {
             _ => "png",
         };
 
-        let source = Cursor::new(data);
-
-        let target_format = match args.target_format {
-            Some(ref format) => ImageFormat::from_str(format).unwrap_or_default(),
-            None => ImageFormat::default(),
-        };
-
-        let img = RawImage::new(source, target_format)?;
+        let img = RawImage::new(&data);
 
         let target_format_str = match args.target_format {
             Some(ref format) => format.to_owned(),
@@ -130,13 +123,13 @@ fn main() -> Result<()> {
 
         let fname = format!("extracted_image_{}.{}", i, target_format_str);
 
-        let out_file_path = PathBuf::from(fname);
+        let writer = get_writer(&fname, &out_dir);
 
-        let out_file = File::create(out_dir.join(out_file_path))?;
+        let format = source_format(filter.cloned());
 
-        let mut writer = BufWriter::new(out_file);
+        let mut img_writer = create_writer(img, format); 
 
-        img.write_to(&mut writer)?;
+        img_writer.write_to(writer)?;
     }
 
     Ok(())
@@ -151,4 +144,11 @@ fn source_format(filter: Option<StreamFilter>) -> ImageFormat {
         _ => "png",
     };
     ImageFormat::from_str(ext).unwrap()
+}
+
+fn get_writer(filename: &str, dir: &PathBuf) -> BufWriter<File> {
+    let filename = PathBuf::from_str(filename).unwrap();
+    let joined_path = dir.join(filename);
+    let file = File::create(joined_path).unwrap();
+    BufWriter::new(file)
 }

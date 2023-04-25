@@ -30,7 +30,7 @@ struct Args {
     target_format: Option<String>,
     /// Subcommand to convert image from one format to another
     #[command(subcommand)]
-    cmd: Command,
+    cmd: Option<Command>,
 }
 
 #[derive(Subcommand)]
@@ -110,7 +110,7 @@ fn main() -> Result<()> {
             Some(JBIG2Decode) => "jbig2",
             Some(JPXDecode) => "jp2k",
             _ => {
-                log::debug!("main : unsupported image format");
+                log::debug!("Unsupported format");
                 continue;
             }
         };

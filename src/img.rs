@@ -1,9 +1,7 @@
+use super::Extract;
 use crate::{err, ImgError};
 use image::ImageOutputFormat;
-use std::{
-    ops::Deref,
-    str::FromStr,
-};
+use std::{ops::Deref, str::FromStr};
 
 #[derive(Clone)]
 pub enum ImageFormat {
@@ -58,6 +56,8 @@ impl From<ImageFormat> for ImageOutputFormat {
 pub struct RawImage {
     data: Vec<u8>,
 }
+
+impl Extract for RawImage {}
 
 impl RawImage {
     pub fn new(source: &[u8]) -> Self {

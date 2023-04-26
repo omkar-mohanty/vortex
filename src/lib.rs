@@ -1,9 +1,12 @@
+pub mod extractor;
 mod img;
 pub mod writer;
 
 use std::{error::Error, fmt::Display};
 
 pub use img::{ImageFormat, RawImage};
+
+pub trait Extract {}
 
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 

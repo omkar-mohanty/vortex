@@ -116,7 +116,7 @@ fn main() -> Result<()> {
 
         let target_format_str = match args.target_format {
             Some(ref format) => format.to_owned(),
-            None => String::from_str("jpeg")?,
+            None => ext.to_string(),
         };
 
         log::debug!("Detected format : {ext}");

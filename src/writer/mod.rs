@@ -23,7 +23,7 @@ impl PngWriter {
 impl<R: Write + Seek> ImageWriter<R> for PngWriter {
     fn write_to(&mut self, w: R) -> Result<()> {
         let data = self.image.deref();
-        let mut encoder = png::Encoder::new(w, 5608044, 5608044);
+        let mut encoder = png::Encoder::new(w, 5608044, 1);
         encoder.set_depth(png::BitDepth::Eight);
         encoder.set_source_gamma(png::ScaledFloat::from_scaled(45455)); // 1.0 / 2.2, scaled by 100000
         encoder.set_source_gamma(png::ScaledFloat::new(1.0 / 2.2)); // 1.0 / 2.2, unscaled, but rounded

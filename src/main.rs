@@ -11,7 +11,7 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-use unpdf::{ImageFormat, RawImage, Result, writer::create_writer};
+use unpdf::{writer::create_writer, ImageFormat, RawImage, Result};
 
 /// unpdf is a tool to extract images from pdf files
 #[derive(Parser)]
@@ -127,7 +127,7 @@ fn main() -> Result<()> {
 
         let format = source_format(filter.cloned());
 
-        let mut img_writer = create_writer(img, format); 
+        let mut img_writer = create_writer(img, format);
 
         img_writer.write_to(writer)?;
     }

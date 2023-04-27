@@ -22,12 +22,12 @@ cargo install --path .
 ## Usage
 
 ```bash
-unpdf pdf_file -o output_folder
+vortex pdf_file -o output_folder
 ```
 
 ### Example
 From the crate root
 
 ```bash
-unpdf resources/sample.pdf -o sample 
+vortex resources/sample.pdf -o sample 
 ```

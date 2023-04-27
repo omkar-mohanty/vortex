@@ -11,7 +11,7 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-use unpdf::{writer::create_writer, ImageFormat, RawImage, Result};
+use vortex::{writer::create_writer, ImageFormat, RawImage, Result};
 
 /// unpdf is a tool to extract images from pdf files
 #[derive(Parser)]
@@ -28,9 +28,6 @@ struct Args {
     /// Optional  output image format i.e jpeg, png etc,
     #[arg(short, long)]
     target_format: Option<String>,
-    /// Subcommand to convert image from one format to another
-    #[command(subcommand)]
-    cmd: Option<Command>,
 }
 
 #[derive(Subcommand)]

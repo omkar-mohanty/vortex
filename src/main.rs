@@ -1,15 +1,15 @@
 use clap::{Parser, Subcommand};
 use log::LevelFilter;
 use pdf::{
-    enc::StreamFilter,
     file::FileOptions,
     object::{Resolve, XObject},
 };
 use std::{
     fs::File,
     io::BufWriter,
+    ops::Deref,
     path::{Path, PathBuf},
-    str::FromStr, ops::Deref,
+    str::FromStr,
 };
 use unpdf::{writer::create_writer, ImageFormat, RawImage, Result};
 
@@ -112,9 +112,7 @@ fn main() -> Result<()> {
             None => ImageFormat::default(),
         };
 
-        let fname = format!("extracted_image_{}.{}", i, target_format);
-
-        let writer = get_writer(&fname, &out_dir);
+        let writer = get_writer(&out_dir, &target_format, i);
 
         let mut img_writer = create_writer(img, target_format);
 
@@ -124,8 +122,9 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn get_writer(filename: &str, dir: &PathBuf) -> BufWriter<File> {
-    let filename = PathBuf::from_str(filename).unwrap();
+fn get_writer(dir: &PathBuf, target_format: &ImageFormat, index: usize) -> BufWriter<File> {
+    let filename = format!("extracted_image_{}.{}", index, target_format);
+    let filename = PathBuf::from_str(&filename).unwrap();
     let joined_path = dir.join(filename);
     let file = File::create(joined_path).unwrap();
     BufWriter::new(file)

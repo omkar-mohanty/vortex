@@ -883,8 +883,7 @@ dependencies = [
 [[package]]
 name = "pdf"
 version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e375ec076445f61d4dbc4636e9e788f841d279c65d6fea8a3875caddd4f2dd82"
+source = "git+https://github.com/omkar-mohanty/pdf.git?branch=png_flate#57bb3dfbc861ab369a53b362a746841063dc8fd7"
 dependencies = [
  "aes",
  "bitflags",
@@ -910,8 +909,7 @@ dependencies = [
 [[package]]
 name = "pdf_derive"
 version = "0.1.22"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f4007262775d0798de87b15cbc64cf1aed5f7ee87eec847e297b69d8ed4b4f8"
+source = "git+https://github.com/omkar-mohanty/pdf.git?branch=png_flate#57bb3dfbc861ab369a53b362a746841063dc8fd7"
 dependencies = [
  "proc-macro2",
  "quote",

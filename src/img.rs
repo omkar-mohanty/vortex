@@ -48,7 +48,7 @@ impl std::fmt::Display for ImageFormat {
         use ImageFormat::*;
 
         match self {
-           Png => f.write_str("png"),
+            Png => f.write_str("png"),
             Jpeg(_) => f.write_str("jpeg"),
             Jp2k => f.write_str("jp2k"),
         }
@@ -77,7 +77,7 @@ impl RawImage {
     pub fn new(source: &[u8], image_dict: ImageDict) -> Self {
         Self {
             data: source.to_vec(),
-            image_dict
+            image_dict,
         }
     }
 }

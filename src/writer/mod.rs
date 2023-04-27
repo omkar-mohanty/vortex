@@ -1,5 +1,4 @@
 use image::ImageOutputFormat;
-
 use crate::{ImageFormat, RawImage, Result};
 use std::{
     io::{Cursor, Seek, Write},

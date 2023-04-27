@@ -1,6 +1,7 @@
 use super::Extract;
 use crate::{err, ImgError};
 use image::ImageOutputFormat;
+use pdf::object::ImageDict;
 use std::{ops::Deref, str::FromStr};
 
 #[derive(Clone)]
@@ -42,6 +43,18 @@ impl From<ImageOutputFormat> for ImageFormat {
     }
 }
 
+impl std::fmt::Display for ImageFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use ImageFormat::*;
+
+        match self {
+           Png => f.write_str("png"),
+            Jpeg(_) => f.write_str("jpeg"),
+            Jp2k => f.write_str("jp2k"),
+        }
+    }
+}
+
 impl From<ImageFormat> for ImageOutputFormat {
     fn from(value: ImageFormat) -> Self {
         use ImageOutputFormat::*;
@@ -55,14 +68,16 @@ impl From<ImageFormat> for ImageOutputFormat {
 
 pub struct RawImage {
     data: Vec<u8>,
+    pub image_dict: ImageDict,
 }
 
 impl Extract for RawImage {}
 
 impl RawImage {
-    pub fn new(source: &[u8]) -> Self {
+    pub fn new(source: &[u8], image_dict: ImageDict) -> Self {
         Self {
             data: source.to_vec(),
+            image_dict
         }
     }
 }

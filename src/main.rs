@@ -9,7 +9,7 @@ use std::{
     fs::File,
     io::BufWriter,
     path::{Path, PathBuf},
-    str::FromStr,
+    str::FromStr, ops::Deref,
 };
 use unpdf::{writer::create_writer, ImageFormat, RawImage, Result};
 
@@ -101,49 +101,27 @@ fn main() -> Result<()> {
             _ => continue,
         };
 
-        let (data, filter) = img.raw_image_data(&file)?;
+        let (data, _filter) = img.raw_image_data(&file)?;
 
-        use StreamFilter::*;
+        let img_dict = img.deref().to_owned();
 
-        let ext = match filter {
-            Some(DCTDecode(_)) => "jpeg",
-            Some(JBIG2Decode) => "jbig2",
-            Some(JPXDecode) => "jp2k",
-            _ => "png",
+        let img = RawImage::new(&data, img_dict);
+
+        let target_format = match args.target_format {
+            Some(ref format) => ImageFormat::from_str(&format)?,
+            None => ImageFormat::default(),
         };
 
-        let img = RawImage::new(&data);
-
-        let target_format_str = match args.target_format {
-            Some(ref format) => format.to_owned(),
-            None => ext.to_string(),
-        };
-
-        log::debug!("Detected format : {ext}");
-
-        let fname = format!("extracted_image_{}.{}", i, target_format_str);
+        let fname = format!("extracted_image_{}.{}", i, target_format);
 
         let writer = get_writer(&fname, &out_dir);
 
-        let format = source_format(filter.cloned());
-
-        let mut img_writer = create_writer(img, format);
+        let mut img_writer = create_writer(img, target_format);
 
         img_writer.write_to(writer)?;
     }
 
     Ok(())
-}
-
-fn source_format(filter: Option<StreamFilter>) -> ImageFormat {
-    use StreamFilter::*;
-    let ext = match filter {
-        Some(DCTDecode(_)) => "jpeg",
-        Some(JBIG2Decode) => "jbig2",
-        Some(JPXDecode) => "jp2k",
-        _ => "png",
-    };
-    ImageFormat::from_str(ext).unwrap()
 }
 
 fn get_writer(filename: &str, dir: &PathBuf) -> BufWriter<File> {

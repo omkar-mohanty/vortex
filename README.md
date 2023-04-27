@@ -1,7 +1,7 @@
 
-# unpdf
+# vortex
 
-unpdf is a simple tool to extract images from pdf files 
+vortex is a simple tool to extract images from pdf files 
 
 ## Installation
 

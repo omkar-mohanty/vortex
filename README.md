@@ -12,7 +12,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 ### 2. Clone the repo
 ```
-git clone https://github.com/omkar-mohanty/unpdf.git && cd unpdf
+git clone https://github.com/omkar-mohanty/vortex.git && cd vortex
 ```
 ### 3. Install using cargo
 ```

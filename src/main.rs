@@ -1,7 +1,6 @@
-use clap::{Parser, Subcommand};
+use clap::Parser;
 use log::LevelFilter;
 use pdf::{
-    enc::StreamFilter,
     file::FileOptions,
     object::{Resolve, XObject},
 };
@@ -29,23 +28,6 @@ struct Args {
     /// Optional  output image format i.e jpeg, png etc,
     #[arg(short, long)]
     target_format: Option<String>,
-}
-
-#[derive(Subcommand)]
-enum Command {
-    /// Extract images from pdf files
-    Extract {},
-    /// Convert images from one format to another
-    Convert {
-        #[arg(short, long)]
-        image_file: Vec<PathBuf>,
-
-        #[arg(short, long)]
-        output_file_name: Option<String>,
-
-        #[arg(short, long)]
-        target_format: Option<String>,
-    },
 }
 
 fn init_log(args: &Args) -> env_logger::Builder {
@@ -99,12 +81,7 @@ fn main() -> Result<()> {
             _ => continue,
         };
 
-        let (data, filter) = img.raw_image_data(&file)?;
-
-        let data = match filter {
-            Some(StreamFilter::FlateDecode(_)) => img.image_data(&file)?,
-            _ => data,
-        };
+        let data = img.image_data(&file)?; 
 
         let img_dict = img.deref().to_owned();
 

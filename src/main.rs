@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 use log::LevelFilter;
 use pdf::{
+    enc::StreamFilter,
     file::FileOptions,
     object::{Resolve, XObject},
 };
@@ -98,7 +99,12 @@ fn main() -> Result<()> {
             _ => continue,
         };
 
-        let (data, _filter) = img.raw_image_data(&file)?;
+        let (data, filter) = img.raw_image_data(&file)?;
+
+        let data = match filter {
+            Some(StreamFilter::FlateDecode(_)) => img.image_data(&file)?,
+            _ => data,
+        };
 
         let img_dict = img.deref().to_owned();
 

@@ -17,7 +17,7 @@ impl Default for ImageFormat {
     }
 }
 
-const DEFAULT_JPEG_QUALITY: u8 = 10;
+const DEFAULT_JPEG_QUALITY: u8 = 100;
 
 impl FromStr for ImageFormat {
     type Err = Box<dyn std::error::Error>;

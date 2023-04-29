@@ -2,10 +2,8 @@ pub mod io;
 
 use crate::{ImageFormat, RawImage, Result};
 use image::ImageOutputFormat;
-use image::{RgbImage, ImageBuffer};
-use std::
-    io::{Seek, Write}
-;
+use image::{ImageBuffer, RgbImage};
+use std::io::{Seek, Write};
 
 pub trait ImageWriter<R: Write + Seek> {
     fn write_to(&mut self, w: R) -> Result<()>;
@@ -22,10 +20,10 @@ impl PngWriter {
 }
 
 impl<R: Write + Seek> ImageWriter<R> for PngWriter {
-    fn write_to(&mut self, w: R) -> Result<()> {
-        let mut img:RgbImage = ImageBuffer::new(self.image.image_dict.width, self.image.image_dict.height);
+    fn write_to(&mut self, mut w: R) -> Result<()> {
+        let mut img: RgbImage =
+            ImageBuffer::new(self.image.image_dict.width, self.image.image_dict.height);
         img.copy_from_slice(&self.image);
-        let mut w = w;
         img.write_to(&mut w, ImageOutputFormat::Png)?;
         Ok(())
     }
@@ -43,16 +41,16 @@ impl JpegWriter {
 }
 
 impl<R: Write + Seek> ImageWriter<R> for JpegWriter {
-    fn write_to(&mut self, w: R) -> Result<()> {
-        let mut img:RgbImage = ImageBuffer::new(self.image.image_dict.width, self.image.image_dict.height);
+    fn write_to(&mut self, mut w: R) -> Result<()> {
+        let mut img: RgbImage =
+            ImageBuffer::new(self.image.image_dict.width, self.image.image_dict.height);
         img.copy_from_slice(&self.image);
-        let mut w = w;
         img.write_to(&mut w, ImageOutputFormat::Jpeg(self.quality))?;
         Ok(())
     }
 }
 
-pub fn create_writer<R: Write + Seek>(
+pub fn create_img_writer<R: Write + Seek>(
     image: RawImage,
     format: ImageFormat,
 ) -> Box<dyn ImageWriter<R>> {

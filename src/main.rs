@@ -13,7 +13,7 @@ use std::{
 };
 use vortex::{writer::create_writer, ImageFormat, RawImage, Result};
 
-/// unpdf is a tool to extract images from pdf files
+/// vortex is a tool to extract images from pdf files
 #[derive(Parser)]
 struct Args {
     /// Pdf file to extract images from
@@ -81,18 +81,18 @@ fn main() -> Result<()> {
             _ => continue,
         };
 
-        let data = img.image_data(&file)?; 
+        let data = img.image_data(&file)?;
 
         let img_dict = img.deref().to_owned();
 
         let img = RawImage::new(&data, img_dict);
 
         let target_format = match args.target_format {
-            Some(ref format) => ImageFormat::from_str(&format)?,
+            Some(ref format) => ImageFormat::from_str(format)?,
             None => ImageFormat::default(),
         };
 
-        let writer = get_writer(&out_dir, &target_format, i);
+        let writer = get_io_writer(&out_dir, &target_format, i);
 
         let mut img_writer = create_writer(img, target_format);
 
@@ -102,7 +102,7 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn get_writer(dir: &PathBuf, target_format: &ImageFormat, index: usize) -> BufWriter<File> {
+fn get_io_writer(dir: &Path, target_format: &ImageFormat, index: usize) -> BufWriter<File> {
     let filename = format!("extracted_image_{}.{}", index, target_format);
     let filename = PathBuf::from_str(&filename).unwrap();
     let joined_path = dir.join(filename);

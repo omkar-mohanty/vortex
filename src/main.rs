@@ -11,7 +11,7 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-use vortex::{writer::create_writer, ImageFormat, RawImage, Result};
+use vortex::{writer::create_img_writer, ImageFormat, RawImage, Result};
 
 /// vortex is a tool to extract images from pdf files
 #[derive(Parser)]
@@ -94,7 +94,7 @@ fn main() -> Result<()> {
 
         let writer = get_io_writer(&out_dir, &target_format, i);
 
-        let mut img_writer = create_writer(img, target_format);
+        let mut img_writer = create_img_writer(img, target_format);
 
         img_writer.write_to(writer)?;
     }

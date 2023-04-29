@@ -1,11 +1,10 @@
 use super::Extract;
 use crate::{err, ImgError};
-use clap::Parser;
 use image::ImageOutputFormat;
 use pdf::object::ImageDict;
 use std::{ops::Deref, str::FromStr};
 
-#[derive(Clone, Copy, Debug, Parser)]
+#[derive(Clone)]
 pub enum ImageFormat {
     Jpeg(u8),
     Png,

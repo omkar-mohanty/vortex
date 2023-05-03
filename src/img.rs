@@ -4,7 +4,7 @@ use image::ImageOutputFormat;
 use pdf::object::ImageDict;
 use std::{ops::Deref, str::FromStr};
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum ImageFormat {
     Jpeg(u8),
     Png,

@@ -8,7 +8,7 @@ fn get_image_dimensions(img: &RawImage) -> (u32, u32) {
 }
 
 pub trait OutputWriter<R: Write + Seek> {
-    fn write_to(self, w: R) -> Result<()>;
+    fn write_to(&mut self, w: R) -> Result<()>;
 }
 
 struct ImageWriter<'a> {
@@ -23,7 +23,7 @@ impl<'a> ImageWriter<'a> {
 }
 
 impl<R: Write + Seek> OutputWriter<R> for ImageWriter<'_> {
-    fn write_to(self, mut w: R) -> Result<()> {
+    fn write_to(&mut self, mut w: R) -> Result<()> {
         let (width, height) = get_image_dimensions(&self.image);
 
         let mut img: RgbImage =
@@ -34,7 +34,7 @@ impl<R: Write + Seek> OutputWriter<R> for ImageWriter<'_> {
             img.len()
         );
         img.copy_from_slice(&self.image);
-        img.write_to(&mut w, self.img_format)?;
+        img.write_to(&mut w, self.img_format.clone())?;
         Ok(())
     }
 }

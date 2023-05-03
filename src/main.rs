@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
     str::FromStr,
 };
-use vortex::{extractor::extract_images, writer::create_img_writer, ImageFormat, Result};
+use vortex::{extractor::extract_images, writer::create_output_writer, ImageFormat, Result};
 
 /// vortex is a tool to extract images from pdf files
 #[derive(Parser)]
@@ -63,7 +63,7 @@ fn main() -> Result<()> {
 
         let writer = get_io_writer(&out_dir, &target_format, i);
 
-        let mut img_writer = create_img_writer(img, target_format);
+        let mut img_writer = create_output_writer(img, target_format);
 
         img_writer.write_to(writer)?;
     }

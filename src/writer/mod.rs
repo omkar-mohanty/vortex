@@ -12,17 +12,17 @@ pub trait ImageWriter<R: Write + Seek> {
     fn write_to(&mut self, w: R) -> Result<()>;
 }
 
-struct PngWriter {
-    image: RawImage,
+struct PngWriter<'a> {
+    image:&'a RawImage,
 }
 
-impl PngWriter {
-    pub fn new(image: RawImage) -> Self {
+impl<'a> PngWriter<'a> {
+    pub fn new(image: &'a RawImage) -> Self {
         PngWriter { image }
     }
 }
 
-impl<R: Write + Seek> ImageWriter<R> for PngWriter {
+impl<R: Write + Seek> ImageWriter<R> for PngWriter<'_> {
     fn write_to(&mut self, mut w: R) -> Result<()> {
         let mut img: RgbImage =
             ImageBuffer::new(self.image.image_dict.width, self.image.image_dict.height);
@@ -32,18 +32,18 @@ impl<R: Write + Seek> ImageWriter<R> for PngWriter {
     }
 }
 
-struct JpegWriter {
-    image: RawImage,
+struct JpegWriter<'a> {
+    image: &'a RawImage,
     quality: u8,
 }
 
-impl JpegWriter {
-    pub fn new(image: RawImage, quality: u8) -> Self {
+impl<'a> JpegWriter<'a> {
+    pub fn new(image:&'a RawImage, quality: u8) -> Self {
         JpegWriter { image, quality }
     }
 }
 
-impl<R: Write + Seek> ImageWriter<R> for JpegWriter {
+impl<R: Write + Seek> ImageWriter<R> for JpegWriter<'_> {
     fn write_to(&mut self, mut w: R) -> Result<()> {
         let (width, height) = get_image_dimensions(&self.image);
         let mut img: RgbImage = ImageBuffer::new(width, height);
@@ -58,10 +58,10 @@ impl<R: Write + Seek> ImageWriter<R> for JpegWriter {
     }
 }
 
-pub fn create_img_writer<R: Write + Seek>(
-    image: RawImage,
+pub fn create_img_writer<'a,R: Write + Seek>(
+    image: &'a RawImage,
     format: ImageFormat,
-) -> Box<dyn ImageWriter<R>> {
+) -> Box<dyn ImageWriter<R> + 'a> {
     use ImageFormat::*;
     match format {
         Jpeg(qual) => Box::new(JpegWriter::new(image, qual)),

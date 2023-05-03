@@ -63,7 +63,7 @@ fn main() -> Result<()> {
 
         let writer = get_io_writer(&out_dir, &target_format, i);
 
-        let mut img_writer = create_img_writer(img.clone(), target_format);
+        let mut img_writer = create_img_writer(img, target_format);
 
         img_writer.write_to(writer)?;
     }

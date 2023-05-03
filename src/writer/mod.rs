@@ -34,7 +34,7 @@ impl<R: Write + Seek> OutputWriter<R> for ImageWriter<'_> {
             img.len()
         );
         img.copy_from_slice(&self.image);
-        img.write_to(&mut w, self.img_format.clone())?;
+        img.write_to(&mut w, self.img_format)?;
         Ok(())
     }
 }

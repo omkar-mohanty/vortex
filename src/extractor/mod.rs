@@ -18,7 +18,7 @@ pub enum Method<'a> {
     Bytes(&'a [u8]),
 }
 
-fn get_pages<T, K, Y>(file: &File<T, K, Y>) -> Result<Vec<PageRc>>
+pub fn get_pages<T, K, Y>(file: &File<T, K, Y>) -> Result<Vec<PageRc>>
 where
     T: Backend,
     K: Cache<std::result::Result<AnySync, Arc<PdfError>>>,
@@ -30,7 +30,7 @@ where
         .collect::<Vec<PageRc>>())
 }
 
-fn get_raw_images<T, K, Y>(page: PageRc, file: &File<T, K, Y>) -> Result<Vec<RawImage>>
+pub fn get_raw_images<T, K, Y>(page: PageRc, file: &File<T, K, Y>) -> Result<Vec<RawImage>>
 where
     T: Backend,
     K: Cache<std::result::Result<AnySync, Arc<PdfError>>>,

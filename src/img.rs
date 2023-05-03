@@ -71,6 +71,15 @@ pub struct RawImage {
     pub image_dict: ImageDict,
 }
 
+impl Clone for RawImage {
+    fn clone(&self) -> Self {
+        Self {
+            data: self.data.clone(),
+            image_dict: self.image_dict.clone(),
+        }
+    }
+}
+
 impl Extract for RawImage {}
 
 impl RawImage {

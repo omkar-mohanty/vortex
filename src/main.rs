@@ -1,17 +1,13 @@
 use clap::Parser;
 use log::LevelFilter;
-use pdf::{
-    file::FileOptions,
-    object::{Resolve, XObject},
-};
+
 use std::{
     fs::File,
     io::BufWriter,
-    ops::Deref,
     path::{Path, PathBuf},
     str::FromStr,
 };
-use vortex::{writer::create_img_writer, ImageFormat, RawImage, Result};
+use vortex::{extractor::extract_images, writer::create_img_writer, ImageFormat, Result};
 
 /// vortex is a tool to extract images from pdf files
 #[derive(Parser)]
@@ -55,38 +51,11 @@ fn main() -> Result<()> {
         std::fs::create_dir(out_dir.clone())?;
     }
 
-    let file = FileOptions::cached().open(args.pdf_file)?;
-
-    let mut images: Vec<_> = vec![];
-
-    for page in file.pages() {
-        let page = page.unwrap();
-
-        let resources = page.resources()?;
-
-        images.extend(
-            resources
-                .xobjects
-                .iter()
-                .map(|(_name, &r)| file.get(r).unwrap())
-                .filter(|o| matches!(**o, pdf::object::XObject::Image(_))),
-        )
-    }
+    let images = extract_images(vortex::extractor::Method::File(args.pdf_file))?;
 
     log::debug!("main : total images {}", images.len());
 
-    for (i, o) in images.iter().enumerate() {
-        let img = match **o {
-            XObject::Image(ref im) => im,
-            _ => continue,
-        };
-
-        let data = img.image_data(&file)?;
-
-        let img_dict = img.deref().to_owned();
-
-        let img = RawImage::new(&data, img_dict);
-
+    for (i, img) in images.iter().enumerate() {
         let target_format = match args.target_format {
             Some(ref format) => ImageFormat::from_str(format)?,
             None => ImageFormat::default(),
@@ -94,7 +63,7 @@ fn main() -> Result<()> {
 
         let writer = get_io_writer(&out_dir, &target_format, i);
 
-        let mut img_writer = create_img_writer(img, target_format);
+        let mut img_writer = create_img_writer(img.clone(), target_format);
 
         img_writer.write_to(writer)?;
     }

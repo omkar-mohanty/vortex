@@ -1,9 +1,12 @@
 pub mod io;
-
 use crate::{ImageFormat, RawImage, Result};
 use image::ImageOutputFormat;
 use image::{ImageBuffer, RgbImage};
 use std::io::{Seek, Write};
+
+fn get_image_dimensions(img: &RawImage) -> (u32, u32) {
+    (img.image_dict.width, img.image_dict.height)
+}
 
 pub trait ImageWriter<R: Write + Seek> {
     fn write_to(&mut self, w: R) -> Result<()>;
@@ -42,8 +45,13 @@ impl JpegWriter {
 
 impl<R: Write + Seek> ImageWriter<R> for JpegWriter {
     fn write_to(&mut self, mut w: R) -> Result<()> {
-        let mut img: RgbImage =
-            ImageBuffer::new(self.image.image_dict.width, self.image.image_dict.height);
+        let (width, height) = get_image_dimensions(&self.image);
+        let mut img: RgbImage = ImageBuffer::new(width, height);
+        log::info!(
+            "image dimensions W : {width} H : {height} Total pixels : {} Raw Image Size {}",
+            width * height,
+            img.len()
+        );
         img.copy_from_slice(&self.image);
         img.write_to(&mut w, ImageOutputFormat::Jpeg(self.quality))?;
         Ok(())

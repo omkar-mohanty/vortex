@@ -568,21 +568,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fed44880c466736ef9a5c5b5facefb5ed0785676d0c02d612db14e54f0d84286"
 
 [[package]]
-name = "html"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bc3a7577238029a2704c53d9571a1e5c67f36ea9f487b03b405df8b64030cacf"
-dependencies = [
- "html-sys",
-]
-
-[[package]]
-name = "html-sys"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05eabf4b1d6f9cf57ee8ddaab1a3065ae8394c5cb08d80f9b49d9ebe9307b56d"
-
-[[package]]
 name = "humantime"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1144,7 +1129,6 @@ version = "1.0.0"
 dependencies = [
  "clap",
  "env_logger",
- "html",
  "image",
  "log",
  "pdf",

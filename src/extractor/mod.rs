@@ -6,6 +6,7 @@ use pdf::backend::Backend;
 use pdf::file::Cache;
 use pdf::file::File;
 use pdf::file::FileOptions;
+use pdf::file::Log;
 use pdf::object::PageRc;
 use pdf::object::{Resolve, XObject};
 use pdf::PdfError;
@@ -18,11 +19,12 @@ pub enum Method<'a> {
     Bytes(&'a [u8]),
 }
 
-pub fn get_pages<T, K, Y>(file: &File<T, K, Y>) -> Result<Vec<PageRc>>
+pub fn get_pages<T, K, Y, L>(file: &File<T, K, Y, L>) -> Result<Vec<PageRc>>
 where
     T: Backend,
     K: Cache<std::result::Result<AnySync, Arc<PdfError>>>,
     Y: Cache<std::result::Result<Arc<[u8]>, Arc<PdfError>>>,
+    L : Log
 {
     Ok(file
         .pages()
@@ -30,21 +32,24 @@ where
         .collect::<Vec<PageRc>>())
 }
 
-pub fn get_raw_images<T, K, Y>(page: PageRc, file: &File<T, K, Y>) -> Result<Vec<RawImage>>
+pub fn get_raw_images<T, K, Y, L>(page: PageRc, file: &File<T, K, Y, L>) -> Result<Vec<RawImage>>
 where
     T: Backend,
     K: Cache<std::result::Result<AnySync, Arc<PdfError>>>,
     Y: Cache<std::result::Result<Arc<[u8]>, Arc<PdfError>>>,
+    L: Log
 {
     let mut images = vec![];
 
     let resources = page.resources()?;
 
+    let resolver = file.resolver();
+
     images.extend(
         resources
             .xobjects
             .iter()
-            .map(|(_name, &r)| file.get(r).unwrap())
+            .map(|(_name, &r)| resolver.get(r).unwrap())
             .filter(|o| matches!(**o, pdf::object::XObject::Image(_))),
     );
 
@@ -58,7 +63,7 @@ where
             _ => continue,
         };
 
-        let data = img.image_data(file)?;
+        let data = img.image_data(&resolver)?;
 
         let img_dict = img.deref().to_owned();
 
